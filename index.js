@@ -26,7 +26,7 @@ function hexRgb(hex){
 }
 
 /**
- * @typedef {{ colorFunctionNotation: 'legacy' | 'modern' }} Options
+ * @typedef {{ colorFunctionNotation: 'legacy' | 'modern', transformToBareValue: boolean }} Options
  */
 
 /**
@@ -36,7 +36,7 @@ function hexRgb(hex){
  * @param  {Options} options
  */
 function ruleHandler(decl, result, options) {
-  const value = valueParser(decl.value).walk(node => {
+  let value = valueParser(decl.value).walk(node => {
     if (node.type !== 'function' || node.value !== 'rgba') {
       return;
     }
@@ -60,6 +60,10 @@ function ruleHandler(decl, result, options) {
     nodes[0].value = options.colorFunctionNotation === 'modern' ? rgb.join(' ') : rgb.join(',');
   }).toString();
 
+  if (options.transformToBareValue) {
+    value = value.replace('rgba(', '').replace(')', '').trim()
+  }
+
   decl.value = value;
 }
 
@@ -68,6 +72,7 @@ function ruleHandler(decl, result, options) {
  */
 module.exports = (options = {}) => {
   const colorFunctionNotation = options.colorFunctionNotation || 'legacy';
+  const transformToBareValue = options.transformToBareValue || false
 
   return {
     postcssPlugin: 'postcss-hexrgba',
@@ -77,7 +82,7 @@ module.exports = (options = {}) => {
         return;
       }
 
-      ruleHandler(decl, result, { colorFunctionNotation });
+      ruleHandler(decl, result, { colorFunctionNotation, transformToBareValue });
     },
   };
 };
