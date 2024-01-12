@@ -36,6 +36,11 @@ function hexRgb(hex){
  * @param  {Options} options
  */
 function ruleHandler(decl, result, options) {
+  const initialValue = decl.value.toString()
+  if (!initialValue.includes('#') || !initialValue.includes('rgba(')) {
+    return;
+  }
+
   let value = valueParser(decl.value).walk(node => {
     if (node.type !== 'function' || node.value !== 'rgba') {
       return;
@@ -61,7 +66,7 @@ function ruleHandler(decl, result, options) {
   }).toString();
 
   if (options.transformToBareValue) {
-    value = value.replace('rgba(', '').replace(')', '').trim()
+    value = value.replace('rgba(', '').replace(')', '').trim();
   }
 
   decl.value = value;
